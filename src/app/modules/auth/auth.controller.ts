@@ -5,12 +5,24 @@ import { catchAsync } from "../../utils/catchAsync.js";
 import { AuthServices } from "./auth.service.js";
 import AppError from "../../errorHelpers/AppError.js";
 import { setAuthCookie } from "../../utils/setCookie.js";
+// import { createUserTokens } from "../../utils/userTokens.js";
 
 const credentialsLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     // const user = await UserServices.createUser(req.body);
 
     const loginInfo = await AuthServices.credentialsLogin(req.body);
+    // const userTokens = await createUserTokens(user);
+    res.cookie("refreshToken", loginInfo.refreshToken, {
+      httpOnly: true,
+      secure: false,
+    });
+
+    res.cookie("accessToken", loginInfo.accessToken, {
+      httpOnly: true,
+      secure: false,
+    });
+    // setAuthCookie(res, userTokens);
 
     sendResponse(res, {
       success: true,
