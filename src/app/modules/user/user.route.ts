@@ -1,7 +1,6 @@
 import { UserControllers } from "./user.controller.js";
-import { createUserZodSchema } from "./user.validation.js";
+import { createUserZodSchema, updateUserZodSchema } from "./user.validation.js";
 import { validateRequest } from "../../middlewares/validateRequest.js";
-
 import { checkAuth } from "../../middlewares/checkAuth.js";
 import { Router } from "express";
 import { Role } from "./user.interface.js";
@@ -17,6 +16,13 @@ router.get(
   "/all-users",
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
   UserControllers.getAllUsers,
+);
+
+router.patch(
+  "/:id",
+  validateRequest(updateUserZodSchema),
+  checkAuth(...Object.values(Role)),
+  // UserControllers.updateUser,
 );
 
 export const UserRoutes = router;

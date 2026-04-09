@@ -4,6 +4,9 @@ import httpStatus from "http-status-codes";
 import { UserServices } from "./user.service.js";
 import { catchAsync } from "../../utils/catchAsync.js";
 import { sendResponse } from "../../utils/sendResponse.js";
+import type { JwtPayload } from "jsonwebtoken";
+
+import AppError from "../../errorHelpers/AppError.js";
 
 const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -16,6 +19,32 @@ const createUser = catchAsync(
     });
   },
 );
+
+// const updateUser = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const userId = req.params.id;
+//     const token = req.headers.authorization;
+
+//     if (!userId || Array.isArray(userId)) {
+//       throw new AppError(400, "Invalid user ID");
+//     }
+//     const verifiedToken = req.user;
+
+//     const payload = req.body;
+//     const user = await UserServices.updateUser(
+//       userId,
+//       payload,
+//       verifiedToken as JwtPayload,
+//     );
+
+//     sendResponse(res, {
+//       success: true,
+//       statusCode: httpStatus.CREATED,
+//       message: "User Updated Successfully",
+//       data: user,
+//     });
+//   },
+// );
 
 const getAllUsers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -34,4 +63,5 @@ const getAllUsers = catchAsync(
 export const UserControllers = {
   createUser,
   getAllUsers,
+  // updateUser,
 };

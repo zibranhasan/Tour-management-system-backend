@@ -10,19 +10,30 @@ export const globalErrorHandler = (
 ) => {
   let statusCode = 500;
   let message = "Something Went Wrong!!";
+  let errorDetails: any = null;
 
-  if (err instanceof AppError) {
+  // 🔥 ZOD ERROR HANDLING
+  if (err.name === "ZodError") {
+    statusCode = 400;
+    message = "Validation Error";
+    errorDetails = err.issues; // ✅ clean output
+  }
+
+  // 🔥 CUSTOM ERROR
+  else if (err instanceof AppError) {
     statusCode = err.statusCode;
-    message = err.message;
-  } else if (err instanceof Error) {
-    statusCode = 500;
     message = err.message;
   }
 
-  res.status(500).json({
+  // 🔥 NORMAL ERROR
+  else if (err instanceof Error) {
+    message = err.message;
+  }
+
+  res.status(statusCode).json({
     success: false,
     message,
-    err,
+    errors: errorDetails, // ✅ clean instead of raw err
     stack: envVars.NODE_ENV === "development" ? err.stack : null,
   });
 };
