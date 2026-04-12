@@ -1,10 +1,6 @@
 import { Server } from "http";
 import mongoose from "mongoose";
-console.log("1️⃣ Before importing app");
-
 import app from "./app.js";
-
-console.log("2️⃣ After importing app");
 import { envVars } from "./app/config/env.js";
 import { seedSuperAdmin } from "./app/utils/seedSuperAdmin.js";
 

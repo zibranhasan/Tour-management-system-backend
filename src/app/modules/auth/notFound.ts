@@ -1,9 +1,5 @@
 import httpStatus from "http-status-codes";
-import express, {
-  type NextFunction,
-  type Request,
-  type Response,
-} from "express";
+import { type Request, type Response } from "express";
 
 const notFound = (req: Request, res: Response) => {
   res.status(httpStatus.NOT_FOUND).json({

@@ -1,7 +1,7 @@
 import AppError from "../../errorHelpers/AppError.js";
 import { Role, type IAuthProvider, type IUser } from "./user.interface.js";
 import { User } from "./user.model.js";
-import httpStatus from "http-status-codes";
+import { StatusCodes } from "http-status-codes";
 import bcryptjs from "bcryptjs";
 import { envVars } from "../../config/env.js";
 import type { JwtPayload } from "jsonwebtoken";
@@ -13,7 +13,7 @@ const createUser = async (payload: Partial<IUser>) => {
   console.log(isUserExist);
 
   if (isUserExist) {
-    throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist!");
+    throw new AppError(StatusCodes.BAD_REQUEST, "User Already Exist!");
   }
 
   const hashedPassword = await bcryptjs.hash(
@@ -50,7 +50,7 @@ const updateUser = async (
   const ifUserExist = await User.findById(userId);
 
   if (!ifUserExist) {
-    throw new AppError(httpStatus.NOT_FOUND, "User Not Found");
+    throw new AppError(StatusCodes.NOT_FOUND, "User Not Found");
   }
 
   if (
@@ -71,7 +71,7 @@ const updateUser = async (
 
   if (payload.role) {
     if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
-      throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
+      throw new AppError(StatusCodes.FORBIDDEN, "You are not authorized");
     }
 
     // if (payload.role === Role.SUPER_ADMIN && decodedToken.role === Role.ADMIN) {
@@ -81,7 +81,7 @@ const updateUser = async (
 
   if (payload.isActive || payload.isDeleted || payload.isVerified) {
     if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDE) {
-      throw new AppError(httpStatus.FORBIDDEN, "You are not authorized");
+      throw new AppError(StatusCodes.FORBIDDEN, "You are not authorized");
     }
   }
 
