@@ -45,4 +45,46 @@ const tourSchema = new Schema<ITour>(
     timestamps: true,
   },
 );
+
+// 🔹 PRE SAVE
+tourSchema.pre("save", async function () {
+  if (this.isModified("title")) {
+    const baseSlug = this.title.toLowerCase().split(" ").join("-");
+    let slug = baseSlug;
+
+    let counter = 0;
+    while (await Tour.exists({ slug })) {
+      slug = `${baseSlug}-${counter++}`; // ✅ fixed
+    }
+
+    this.slug = slug;
+  }
+});
+
+// 🔹 PRE UPDATE
+tourSchema.pre("findOneAndUpdate", async function () {
+  const update = this.getUpdate() as any;
+
+  // handle both direct and $set updates
+  const title = update.title || update.$set?.title;
+
+  if (title) {
+    const baseSlug = title.toLowerCase().split(" ").join("-");
+    let slug = baseSlug;
+
+    let counter = 0;
+    while (await Tour.exists({ slug })) {
+      slug = `${baseSlug}-${counter++}`; // ✅ fixed
+    }
+
+    if (update.$set) {
+      update.$set.slug = slug;
+    } else {
+      update.slug = slug;
+    }
+  }
+
+  this.setUpdate(update);
+});
+
 export const Tour = model<ITour>("Tour", tourSchema);

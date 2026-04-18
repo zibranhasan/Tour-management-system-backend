@@ -1,7 +1,10 @@
 import type { Response } from "express";
 
 interface TMeta {
-  total: number;
+  page: number;
+  limit: number;
+  totalPage: number;
+  total?: number;
 }
 
 interface TResponse<T> {

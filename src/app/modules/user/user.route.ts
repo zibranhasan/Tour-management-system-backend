@@ -22,7 +22,8 @@ router.patch(
   "/:id",
   validateRequest(updateUserZodSchema),
   checkAuth(...Object.values(Role)),
-  // UserControllers.updateUser,
+  UserControllers.updateUser,
 );
+router.get("/me", checkAuth(...Object.values(Role)), UserControllers.getMe);
 
 export const UserRoutes = router;
