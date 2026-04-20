@@ -2,7 +2,6 @@ import cors from "cors";
 import express, { type Request, type Response } from "express";
 import { router } from "./app/routes/index.js";
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler.js";
-
 import cookieParser from "cookie-parser";
 import expressSession from "express-session";
 import passport from "passport";
