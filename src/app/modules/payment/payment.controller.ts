@@ -3,6 +3,8 @@ import { catchAsync } from "../../utils/catchAsync.js";
 import { envVars } from "../../config/env.js";
 import { PaymentService } from "./payment.service.js";
 import { sendResponse } from "../../utils/sendResponse.js";
+import AppError from "../../errorHelpers/AppError.js";
+import { SSLService } from "../sslCommerz/sslCommerz.service.js";
 
 const initPayment = catchAsync(async (req: Request, res: Response) => {
   const bookingId = req.params.bookingId;
@@ -48,34 +50,38 @@ const cancelPayment = catchAsync(async (req: Request, res: Response) => {
   }
 });
 
-// const getInvoiceDownloadUrl = catchAsync(
-//   async (req: Request, res: Response) => {
-//     const { paymentId } = req.params;
-//     const result = await PaymentService.getInvoiceDownloadUrl(paymentId);
-//     sendResponse(res, {
-//       statusCode: 200,
-//       success: true,
-//       message: "Invoice download URL retrieved successfully",
-//       data: result,
-//     });
-//   },
-// );
-// const validatePayment = catchAsync(async (req: Request, res: Response) => {
-//   console.log("sslcommerz ipn url body", req.body);
-//   await SSLService.validatePayment(req.body);
-//   sendResponse(res, {
-//     statusCode: 200,
-//     success: true,
-//     message: "Payment Validated Successfully",
-//     data: null,
-//   });
-// });
+const getInvoiceDownloadUrl = catchAsync(
+  async (req: Request, res: Response) => {
+    const { paymentId } = req.params;
+
+    if (typeof paymentId !== "string") {
+      throw new AppError(400, "Invalid paymentId");
+    }
+    const result = await PaymentService.getInvoiceDownloadUrl(paymentId);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Invoice download URL retrieved successfully",
+      data: result,
+    });
+  },
+);
+const validatePayment = catchAsync(async (req: Request, res: Response) => {
+  console.log("sslcommerz ipn url body", req.body);
+  await SSLService.validatePayment(req.body);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Payment Validated Successfully",
+    data: null,
+  });
+});
 
 export const PaymentController = {
   initPayment,
   successPayment,
   failPayment,
   cancelPayment,
-  // getInvoiceDownloadUrl,
-  // validatePayment,
+  getInvoiceDownloadUrl,
+  validatePayment,
 };
