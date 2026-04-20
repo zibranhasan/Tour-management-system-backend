@@ -5,11 +5,13 @@ import { Payment } from "./payment.model.js";
 import { PAYMENT_STATUS } from "./payment.interface.js";
 import AppError from "../../errorHelpers/AppError.js";
 import { BOOKING_STATUS } from "../booking/booking.interface.js";
-import type { IInvoiceData } from "../../utils/invoice.js";
+import { generatePdf, type IInvoiceData } from "../../utils/invoice.js";
 import type { ITour } from "../tour/tour.interface.js";
 import type { IUser } from "../user/user.interface.js";
 import type { ISSLCommerz } from "../sslCommerz/sslCommerz.interface.js";
 import { SSLService } from "../sslCommerz/sslCommerz.service.js";
+import { sendEmail } from "../../utils/sendEmail.js";
+import { uploadBufferToCloudinary } from "../../config/cloudinary.config.js";
 
 const initPayment = async (bookingId: string) => {
   const payment = await Payment.findOne({ booking: bookingId });
@@ -91,36 +93,35 @@ const successPayment = async (query: Record<string, string>) => {
       userName: (updatedBooking.user as unknown as IUser).name,
     };
 
-    // const pdfBuffer = await generatePdf(invoiceData);
+    const pdfBuffer = await generatePdf(invoiceData);
 
-    // const cloudinaryResult = await uploadBufferToCloudinary(
-    //   pdfBuffer,
-    //   "invoice",
-    // );
+    const cloudinaryResult = await uploadBufferToCloudinary(
+      pdfBuffer,
+      "invoice",
+    );
 
-    // if (!cloudinaryResult) {
-    //   throw new AppError(401, "Error uploading pdf");
-    // }
+    if (!cloudinaryResult) {
+      throw new AppError(401, "Error uploading pdf");
+    }
 
-    // await Payment.findByIdAndUpdate(
-    //   updatedPayment._id,
-    //   // { invoiceUrl: cloudinaryResult.secure_url },
-    //   { runValidators: true, session },
-    // );
-
-    // await sendEmail({
-    //   to: (updatedBooking.user as unknown as IUser).email,
-    //   subject: "Your Booking Invoice",
-    //   templateName: "invoice",
-    //   templateData: invoiceData,
-    //   attachments: [
-    //     {
-    //       filename: "invoice.pdf",
-    //       content: pdfBuffer,
-    //       contentType: "application/pdf",
-    //     },
-    //   ],
-    // });
+    await Payment.findByIdAndUpdate(
+      updatedPayment._id,
+      { invoiceUrl: cloudinaryResult.secure_url },
+      { runValidators: true, session },
+    );
+    await sendEmail({
+      to: (updatedBooking.user as unknown as IUser).email!,
+      subject: "Your Booking Invoice",
+      templateName: "invoice",
+      templateData: invoiceData,
+      attachments: [
+        {
+          filename: "invoice.pdf",
+          content: pdfBuffer,
+          contentType: "application/pdf",
+        },
+      ],
+    });
 
     await session.commitTransaction(); //transaction
     session.endSession();
@@ -201,24 +202,24 @@ const cancelPayment = async (query: Record<string, string>) => {
   }
 };
 
-// const getInvoiceDownloadUrl = async (paymentId: string) => {
-//   const payment = await Payment.findById(paymentId).select("invoiceUrl");
+const getInvoiceDownloadUrl = async (paymentId: string) => {
+  const payment = await Payment.findById(paymentId).select("invoiceUrl");
 
-//   if (!payment) {
-//     throw new AppError(401, "Payment not found");
-//   }
+  if (!payment) {
+    throw new AppError(401, "Payment not found");
+  }
 
-//   if (!payment.invoiceUrl) {
-//     throw new AppError(401, "No invoice found");
-//   }
+  if (!payment.invoiceUrl) {
+    throw new AppError(401, "No invoice found");
+  }
 
-//   return payment.invoiceUrl;
-// };
+  return payment.invoiceUrl;
+};
 
 export const PaymentService = {
   initPayment,
   successPayment,
   failPayment,
   cancelPayment,
-  // getInvoiceDownloadUrl,
+  getInvoiceDownloadUrl,
 };

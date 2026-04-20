@@ -8,6 +8,7 @@ import expressSession from "express-session";
 import passport from "passport";
 import "./app/config/passport.js";
 import notFound from "./app/modules/auth/notFound.js";
+import { envVars } from "./app/config/env.js";
 const app = express();
 
 app.use(
@@ -23,7 +24,12 @@ app.use(passport.session());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(
+  cors({
+    origin: envVars.FRONTEND_URL,
+    credentials: true,
+  }),
+);
 
 app.use("/api/v1", router);
 
